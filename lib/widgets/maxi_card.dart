@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:minicard/theme/nj_text_themes.dart';
 import 'package:minicard/theme/nj_theme.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter/widgets.dart' hide Shadow;
 
 import 'hero_text.dart';
 import 'mini_card.dart';
+import 'nj_button.dart';
 
 class MaxiCard extends StatefulWidget {
   final MiniCard miniCard;
@@ -100,13 +100,25 @@ class _MaxiCardState extends State<MaxiCard> {
                   color: selected ? Colors.yellow[500] : Colors.yellow[200],
                 ),
                 alignment: Alignment.centerLeft,
-                child: Switch(
-                  value: selected,
-                  onChanged: (value) {
-                    setState(() => selected = value);
-                    this.widget.activeMiniCard.setActive(this.widget.miniCard);
-                  },
-                ))));
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Switch(
+                        value: selected,
+                        onChanged: (value) {
+                          setState(() => selected = value);
+                          this
+                              .widget
+                              .activeMiniCard
+                              .setActive(this.widget.miniCard);
+                        },
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child:
+                            ButtonPrimary(label: 'Close', onPressed: closeMaxi),
+                      )
+                    ]))));
   }
 
   void closeMaxi() {
