@@ -57,16 +57,16 @@ class MyApp extends StatelessWidget {
         MiniCard(
             'Colleague',
             Text('body'), //buildActivation(context, 'message'),
-            Colors.orange,
+            Colors.blue,
             heightFactor,
             widthFactor),
         MiniCard(
             'Team',
             Text('body'), //buildActivation(context, 'message')
-            Colors.pink,
+            Colors.orange,
             heightFactor,
             widthFactor),
-        MiniCard('User Chooses', Text('body'), Colors.blue, heightFactor,
+        MiniCard('User Chooses', Text('body'), Colors.pink, heightFactor,
             widthFactor),
         MiniCard(
             'External No.',
@@ -82,7 +82,10 @@ class MessagePage extends StatelessWidget {
   static const routeName = '/message';
   final ActiveMiniCard activeMiniCard;
 
-  const MessagePage({Key key, this.activeMiniCard}) : super(key: key);
+  final MiniCard selected;
+
+  const MessagePage({Key key, this.activeMiniCard, this.selected})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -93,17 +96,8 @@ class MessagePage extends StatelessWidget {
       localActive = activeMiniCard;
     }
 
-    return Material(
-        child: MaxiCard(
-            localActive,
-            MiniCard(
-                'Message',
-                TextNJBody(
-                    'Play a message to the caller.'), //  buildActivation(context, 'message'),
-                Colors.purple,
-                1,
-                1)));
+    return Material(child: MaxiCard(localActive, selected));
   }
 
-  MessagePage.withActive(this.activeMiniCard);
+  MessagePage.withActive(this.activeMiniCard, this.selected);
 }
