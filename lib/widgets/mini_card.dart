@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
+
+// this import causes the compile to web issues.
+import 'package:page_transition/page_transition.dart';
+
+
 import 'package:provider/provider.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/widgets.dart' hide Shadow;
 import 'package:minicard/theme/nj_text_themes.dart';
 import 'package:minicard/theme/nj_theme.dart';
+
+import '../main.dart';
+import 'hero_text.dart';
+import 'local_context.dart';
 
 class MiniCard extends StatefulWidget {
   final String title;
@@ -13,7 +22,11 @@ class MiniCard extends StatefulWidget {
 
   static const double borderRadius = 10.0;
 
-  MiniCard(this.title, this.body, this.widthFactor, this.heightFactor);
+  final Color barColor;
+
+  MiniCard(this.title, this.body, this.barColor, this.widthFactor,
+      this.heightFactor);
+
   @override
   _MiniCardState createState() => _MiniCardState();
 }
@@ -23,20 +36,12 @@ class _MiniCardState extends State<MiniCard> {
 
   @override
   Widget build(BuildContext context) {
+    // timeDilation = 5.0;
+
     var width = MediaQuery.of(context).size.width * widget.widthFactor;
     var height = MediaQuery.of(context).size.height * widget.heightFactor;
 
-    return SizedBox(
-      width: width,
-      height: height,
-      child: Container(
-          margin: EdgeInsets.only(right: NJTheme.padding),
-          decoration: BoxDecoration(
-              color: Colors.grey,
-              borderRadius:
-                  BorderRadius.all(Radius.circular(MiniCard.borderRadius))),
-          child: buildBody(context)),
-    );
+    return SizedBox(width: width, height: height, child: buildBody(context));
   }
 
   /// Builds the body of the card which is a top panel covering most
@@ -64,82 +69,125 @@ class _MiniCardState extends State<MiniCard> {
   }
 
   Widget buildRightBar() {
-    return Container(
-      width: 20,
-      // height: 100,
-      decoration: BoxDecoration(
-          color: Colors.orange,
-          borderRadius: BorderRadius.only(
-            topRight: Radius.circular(MiniCard.borderRadius),
-          )),
-    );
+    return Hero(
+        tag: 'mini-card-${widget.title}-rightBar',
+        child: Container(
+          width: 20,
+          // height: 100,
+          decoration: BoxDecoration(
+              color: widget.barColor,
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(MiniCard.borderRadius),
+              )),
+        ));
   }
 
   Widget buildContent() {
-    return Container(
-      child: widget.body,
-      decoration: BoxDecoration(
-        color: Colors.grey,
-        borderRadius: BorderRadius.all(Radius.circular(MiniCard.borderRadius)),
+    return Expanded(
+      flex: 1,
+      // child: HeroText(
+      //   tag: 'mini-card-${widget.title}-content',
+      child: Container(
+        padding: EdgeInsets.all(NJTheme.padding),
+        child: widget.body,
+        decoration: BoxDecoration(
+          color: Colors.grey,
+        ),
       ),
+      // ),
     );
   }
 
   Widget buildTitle() {
-    return Container(
-        padding: EdgeInsets.only(left: NJTheme.padding),
-        decoration: BoxDecoration(
-            color: Colors.green,
-            borderRadius:
-                BorderRadius.all(Radius.circular(MiniCard.borderRadius))),
-        child: TextNJHeadline(widget.title));
+    return HeroText(
+      tag: 'mini-card-${widget.title}',
+      child: GestureDetector(
+          onTap: showMessage,
+          child: Container(
+              padding: EdgeInsets.all(NJTheme.padding),
+              decoration: BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(MiniCard.borderRadius))),
+              child: TextNJSubheading(widget.title))),
+    );
   }
 
   Widget buildActivation(BuildContext context) {
     //var height = MediaQuery.of(context).size.height.round();
 
-    // return Column(children: [
-    //   Expanded(flex: height * 90, child: Text(summary)),
-    //   Expanded(
-    //       flex: height * 10,
-    //       child: Switch(
-    //         value: true,
-    //         onChanged: (selected) {},
-    //       ))
-    // ]);
+    return
+        // height: height * heightFactor * .9
+        // Expanded(flex: 1, child: Text(summary)),
+        Consumer<ActiveMiniCard>(
+      builder: (context, active, _) {
+        selected = active.active == this.widget;
+        return Hero(
+            tag: 'mini-card-${widget.title}-activation',
+            child: Material(
+                child: Container(
+                    decoration: BoxDecoration(
+                        color:
+                            selected ? Colors.yellow[500] : Colors.yellow[200],
+                        borderRadius: BorderRadius.only(
+                            bottomRight: Radius.circular(MiniCard.borderRadius),
+                            bottomLeft:
+                                Radius.circular(MiniCard.borderRadius))),
+                    alignment: Alignment.centerLeft,
+                    child: Switch(
+                      value: selected,
+                      onChanged: (value) {
+                        setState(() => selected = value);
+                        ActiveMiniCard activeMiniCard =
+                            Provider.of<ActiveMiniCard>(context, listen: false);
+                        activeMiniCard.setActive(this.widget);
+                      },
+                    ))));
+      },
+    );
+  }
 
-    return Column(children: [
-      // height: height * heightFactor * .9
-      // Expanded(flex: 1, child: Text(summary)),
-      Container(
-          decoration: BoxDecoration(
-              color: selected ? Colors.green[400] : Colors.green[200],
-              borderRadius: BorderRadius.only(
-                  bottomRight: Radius.circular(MiniCard.borderRadius),
-                  bottomLeft: Radius.circular(MiniCard.borderRadius))),
-          alignment: Alignment.centerLeft,
-          child: Switch(
-            value: selected,
-            onChanged: (value) {
-              print('value: $value');
-              setState(() => selected = value);
-              print('selected: $selected');
-            },
-          ))
-    ]);
+  void showMessage() {
+    ActiveMiniCard activeMiniCard =
+        Provider.of<ActiveMiniCard>(context, listen: false);
+    Navigator.push(
+        context,
+        // PageTransition(
+        //     type: PageTransitionType.fade,
+        //     child: MessagePage.withActive(activeMiniCard),
+        //     duration: Duration(milliseconds: 600)));
+        PageRouteBuilder(
+            transitionDuration: Duration(milliseconds: 600),
+            pageBuilder: (_, __, ___) =>
+                MessagePage.withActive(activeMiniCard)));
+  }
+}
+
+class ActiveMiniCard extends ChangeNotifier {
+  /// the minicard instance, from the set
+  /// of minicard's passed to [MiniCardRow]
+  /// that is currently the active instanc.e
+  MiniCard active;
+
+  void setActive(MiniCard miniCard) {
+    active = miniCard;
+    notifyListeners();
   }
 }
 
 class MiniCardRow extends StatelessWidget {
   final List<MiniCard> miniCards;
+  final ActiveMiniCard active = ActiveMiniCard();
 
   MiniCardRow(this.miniCards);
   @override
   Widget build(BuildContext context) {
-    return Provider.value(
-        value: this,
-        child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(mainAxisSize: MainAxisSize.min, children: miniCards)));
+    return ChangeNotifierProvider<ActiveMiniCard>(
+        create: (context) => active,
+        child: LocalContext(
+            builder: (context) => SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child:
+                    Row(mainAxisSize: MainAxisSize.min, children: miniCards))));
   }
 }
