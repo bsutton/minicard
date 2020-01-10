@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 // this import causes the compile to web issues.
 import 'package:page_transition/page_transition.dart';
 
+import 'package:email_validator/email_validator.dart';
 
 import 'package:provider/provider.dart';
 import 'package:flutter/widgets.dart' hide Shadow;
@@ -29,6 +30,16 @@ class MiniCard extends StatefulWidget {
 
   @override
   _MiniCardState createState() => _MiniCardState();
+
+  bool operator ==(Object other) {
+    return other is MiniCard && this.title == other.title;
+  }
+
+  int get hashCode {
+    int result = 17;
+    result = 37 * result + title.hashCode;
+    return result;
+  }
 }
 
 class _MiniCardState extends State<MiniCard> {
@@ -36,8 +47,6 @@ class _MiniCardState extends State<MiniCard> {
 
   @override
   Widget build(BuildContext context) {
-    // timeDilation = 5.0;
-
     var width = MediaQuery.of(context).size.width * widget.widthFactor;
     var height = MediaQuery.of(context).size.height * widget.heightFactor;
 
@@ -46,15 +55,27 @@ class _MiniCardState extends State<MiniCard> {
 
   /// Builds the body of the card which is a top panel covering most
   /// of the UI and the bottom activation bar.
-  Column buildBody(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-            flex: 1, child: Row(children: [buildPanel(), buildRightBar()])),
-        buildActivation(context)
-      ],
-    );
+  Widget buildBody(BuildContext context) {
+    return GestureDetector(
+        onTap: showMessage,
+        child: Container(
+          margin:
+              EdgeInsets.only(left: NJTheme.padding, right: NJTheme.padding),
+          decoration: BoxDecoration(
+              color: Colors.green,
+              borderRadius: BorderRadius.all(
+                Radius.circular(MiniCard.borderRadius),
+              )),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                  flex: 1,
+                  child: Row(children: [buildPanel(), buildRightBar()])),
+              buildActivation(context)
+            ],
+          ),
+        ));
   }
 
   Widget buildPanel() {
@@ -101,15 +122,13 @@ class _MiniCardState extends State<MiniCard> {
   Widget buildTitle() {
     return HeroText(
       tag: 'mini-card-${widget.title}',
-      child: GestureDetector(
-          onTap: showMessage,
-          child: Container(
-              padding: EdgeInsets.all(NJTheme.padding),
-              decoration: BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(MiniCard.borderRadius))),
-              child: TextNJSubheading(widget.title))),
+      child: Container(
+          padding: EdgeInsets.all(NJTheme.padding),
+          decoration: BoxDecoration(
+              color: Colors.green,
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(MiniCard.borderRadius))),
+          child: TextNJSubheading(widget.title)),
     );
   }
 
@@ -125,6 +144,9 @@ class _MiniCardState extends State<MiniCard> {
         return Hero(
             tag: 'mini-card-${widget.title}-activation',
             child: Material(
+                borderRadius: BorderRadius.only(
+                    bottomRight: Radius.circular(MiniCard.borderRadius),
+                    bottomLeft: Radius.circular(MiniCard.borderRadius)),
                 child: Container(
                     decoration: BoxDecoration(
                         color:
@@ -152,14 +174,14 @@ class _MiniCardState extends State<MiniCard> {
         Provider.of<ActiveMiniCard>(context, listen: false);
     Navigator.push(
         context,
-        // PageTransition(
-        //     type: PageTransitionType.fade,
-        //     child: MessagePage.withActive(activeMiniCard),
-        //     duration: Duration(milliseconds: 600)));
-        PageRouteBuilder(
-            transitionDuration: Duration(milliseconds: 600),
-            pageBuilder: (_, __, ___) =>
-                MessagePage.withActive(activeMiniCard)));
+        PageTransition(
+            type: PageTransitionType.fade,
+            child: MessagePage.withActive(activeMiniCard, this.widget),
+            duration: Duration(milliseconds: 600)));
+    // PageRouteBuilder(
+    //     transitionDuration: Duration(milliseconds: 600),
+    //     pageBuilder: (_, __, ___) =>
+    //         MessagePage.withActive(activeMiniCard)));
   }
 }
 
