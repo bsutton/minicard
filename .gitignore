@@ -37,3 +37,5 @@ lib/generated_plugin_registrant.dart
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 .metadata
 pubspec.lock
+android/.gradle
+android/gradle/wrapper/gradle-wrapper.jar

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 // this import causes the compile to web issues.
 import 'package:page_transition/page_transition.dart';
 
-import 'package:email_validator/email_validator.dart';
 
 import 'package:provider/provider.dart';
 import 'package:flutter/widgets.dart' hide Shadow;
